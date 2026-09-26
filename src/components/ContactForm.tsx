@@ -17,9 +17,8 @@ export function ContactForm({
 }) {
   const [form, setForm] = useState({ name: '', phone: '', email: '', message: defaultMessage, website: '' });
   const [status, setStatus] = useState<Status>({ kind: 'idle' });
-  // השגיאה מוצגת רק אחרי שיצאו מהשדה, לא באמצע ההקלדה
-  const [phoneTouched, setPhoneTouched] = useState(false);
-  const phoneError = phoneTouched && form.phone.trim() !== '' && !isValidPhone(form.phone);
+  // השגיאה נבדקת רק ביציאה מהשדה, ונעלמת ברגע שחוזרים להקליד
+  const [phoneError, setPhoneError] = useState(false);
 
   const set = (k: keyof typeof form) => (e: { target: { value: string } }) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
@@ -34,7 +33,7 @@ export function ContactForm({
     if (!form.phone.trim() && !form.email.trim()) return fail('השאירו טלפון או אימייל כדי שאוכל לחזור אליכם', 'phone');
     if (!form.message.trim()) return fail('ספרו לי בקצרה במה אפשר לעזור', 'message');
     if (form.phone.trim() && !isValidPhone(form.phone)) {
-      setPhoneTouched(true);
+      setPhoneError(true);
       document.getElementById(id('phone'))?.focus();
       return;
     }
@@ -43,7 +42,7 @@ export function ContactForm({
       await api.sendContact({ ...form, propertyId });
       setStatus({ kind: 'sent' });
       setForm({ name: '', phone: '', email: '', message: '', website: '' });
-      setPhoneTouched(false);
+      setPhoneError(false);
     } catch (err) {
       setStatus({ kind: 'error', message: (err as Error).message });
     }
@@ -65,12 +64,12 @@ export function ContactForm({
   return (
     <form className="form" onSubmit={submit} noValidate>
       <div className="field">
-        <label htmlFor={id('name')}>שם מלא <span className="req" aria-hidden>*</span></label>
+        <label htmlFor={id('name')}>שם מלא</label>
         <input id={id('name')} autoComplete="name" required maxLength={L.name} value={form.name} onChange={set('name')} />
       </div>
       <div className="field-row">
         <div className="field">
-          <label htmlFor={id('phone')}>טלפון <span className="req" aria-hidden>*</span></label>
+          <label htmlFor={id('phone')}>טלפון</label>
           <input
             id={id('phone')}
             type="tel"
@@ -79,10 +78,13 @@ export function ContactForm({
             inputMode="tel"
             maxLength={L.phone}
             value={form.phone}
-            onChange={(e) => setForm((f) => ({ ...f, phone: formatPhone(e.target.value) }))}
-            onBlur={() => setPhoneTouched(true)}
+            onChange={(e) => {
+              setForm((f) => ({ ...f, phone: formatPhone(e.target.value) }));
+              setPhoneError(false);
+            }}
+            onBlur={(e) => setPhoneError(e.target.value.trim() !== '' && !isValidPhone(e.target.value))}
             aria-invalid={phoneError}
-            aria-describedby={phoneError ? `${id('phone-error')} ${id('contact-hint')}` : id('contact-hint')}
+            aria-describedby={phoneError ? id('phone-error') : undefined}
           />
           {phoneError && (
             <small id={id('phone-error')} className="field-error">
@@ -91,13 +93,12 @@ export function ContactForm({
           )}
         </div>
         <div className="field">
-          <label htmlFor={id('email')}>אימייל <span className="req" aria-hidden>*</span></label>
-          <input id={id('email')} type="email" dir="ltr" autoComplete="email" maxLength={L.email} aria-describedby={id('contact-hint')} value={form.email} onChange={set('email')} />
+          <label htmlFor={id('email')}>אימייל</label>
+          <input id={id('email')} type="email" dir="ltr" autoComplete="email" maxLength={L.email} value={form.email} onChange={set('email')} />
         </div>
       </div>
-      <p className="field-hint" id={id('contact-hint')}>* שדות חובה. מספיק טלפון <strong>או</strong> אימייל.</p>
       <div className="field">
-        <label htmlFor={id('message')}>במה אפשר לעזור? <span className="req" aria-hidden>*</span></label>
+        <label htmlFor={id('message')}>במה אפשר לעזור?</label>
         <textarea
           id={id('message')}
           required
