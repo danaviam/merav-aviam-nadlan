@@ -279,6 +279,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .field textarea { resize: vertical; line-height: 1.5; }
 .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--sea-2); outline: none; box-shadow: 0 0 0 3px rgba(24, 84, 103, 0.18); }
 .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; align-items: end; }
+/* שדות שמתחתם עשויה להופיע שגיאה – מיושרים למעלה כדי שהשדה השכן לא "יירד" */
+.field-row--top { align-items: start; }
 .field-row--3 { grid-template-columns: repeat(3, 1fr); }
 .field-row--4 { grid-template-columns: repeat(4, 1fr); }
 @media (max-width: 640px) {
@@ -421,6 +423,7 @@ html.a11y-cursor, html.a11y-cursor * {
 .site-footer__bottom a { text-decoration: none; }
 .site-footer__bottom a:hover { text-decoration: underline; }
 .form-note a { color: inherit; }
+.ltr-num { direction: ltr; unicode-bidi: isolate; white-space: nowrap; }
 .field-error { display: block; color: var(--danger); font-size: 0.85rem; margin-top: 0.3rem; font-weight: 600; }
 input[aria-invalid='true'] { border-color: var(--danger) !important; }
 .char-count { display: block; text-align: end; font-size: 0.85rem; color: var(--muted); margin-top: 0.25rem; }

@@ -67,7 +67,7 @@ export function ContactForm({
         <label htmlFor={id('name')}>שם מלא</label>
         <input id={id('name')} autoComplete="name" required maxLength={L.name} value={form.name} onChange={set('name')} />
       </div>
-      <div className="field-row">
+      <div className="field-row field-row--top">
         <div className="field">
           <label htmlFor={id('phone')}>טלפון</label>
           <input
@@ -88,7 +88,7 @@ export function ContactForm({
           />
           {phoneError && (
             <small id={id('phone-error')} className="field-error">
-              מספר לא תקין. לדוגמה: 050-1234567 או 03-1234567
+              מספר לא תקין. לדוגמה: <span className="ltr-num">050-1234567</span> או <span className="ltr-num">03-1234567</span>
             </small>
           )}
         </div>
