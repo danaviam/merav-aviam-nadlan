@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
+import { formatPhone, isValidPhone } from '../../shared/phone';
 import { CONTACT_LIMITS as L } from '../../shared/types';
 import { api } from '../api';
 
@@ -16,6 +17,9 @@ export function ContactForm({
 }) {
   const [form, setForm] = useState({ name: '', phone: '', email: '', message: defaultMessage, website: '' });
   const [status, setStatus] = useState<Status>({ kind: 'idle' });
+  // השגיאה מוצגת רק אחרי שיצאו מהשדה, לא באמצע ההקלדה
+  const [phoneTouched, setPhoneTouched] = useState(false);
+  const phoneError = phoneTouched && form.phone.trim() !== '' && !isValidPhone(form.phone);
 
   const set = (k: keyof typeof form) => (e: { target: { value: string } }) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
@@ -26,11 +30,17 @@ export function ContactForm({
       setStatus({ kind: 'error', message: 'השאירו טלפון או אימייל כדי שאוכל לחזור אליכם' });
       return;
     }
+    if (form.phone.trim() && !isValidPhone(form.phone)) {
+      setPhoneTouched(true);
+      document.getElementById(id('phone'))?.focus();
+      return;
+    }
     setStatus({ kind: 'sending' });
     try {
       await api.sendContact({ ...form, propertyId });
       setStatus({ kind: 'sent' });
       setForm({ name: '', phone: '', email: '', message: '', website: '' });
+      setPhoneTouched(false);
     } catch (err) {
       setStatus({ kind: 'error', message: (err as Error).message });
     }
@@ -58,7 +68,25 @@ export function ContactForm({
       <div className="field-row">
         <div className="field">
           <label htmlFor={id('phone')}>טלפון</label>
-          <input id={id('phone')} type="tel" dir="ltr" autoComplete="tel" inputMode="tel" maxLength={L.phone} value={form.phone} onChange={set('phone')} />
+          <input
+            id={id('phone')}
+            type="tel"
+            dir="ltr"
+            autoComplete="tel"
+            inputMode="tel"
+            placeholder="050-1234567"
+            maxLength={L.phone}
+            value={form.phone}
+            onChange={(e) => setForm((f) => ({ ...f, phone: formatPhone(e.target.value) }))}
+            onBlur={() => setPhoneTouched(true)}
+            aria-invalid={phoneError}
+            aria-describedby={phoneError ? id('phone-error') : undefined}
+          />
+          {phoneError && (
+            <small id={id('phone-error')} className="field-error">
+              מספר לא תקין. לדוגמה: 050-1234567 או 03-1234567
+            </small>
+          )}
         </div>
         <div className="field">
           <label htmlFor={id('email')}>אימייל</label>

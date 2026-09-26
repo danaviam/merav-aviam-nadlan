@@ -421,6 +421,8 @@ html.a11y-cursor, html.a11y-cursor * {
 .site-footer__bottom a { text-decoration: none; }
 .site-footer__bottom a:hover { text-decoration: underline; }
 .form-note a { color: inherit; }
+.field-error { display: block; color: var(--danger); font-size: 0.85rem; margin-top: 0.3rem; font-weight: 600; }
+input[aria-invalid='true'] { border-color: var(--danger) !important; }
 .char-count { display: block; text-align: end; font-size: 0.85rem; color: var(--muted); margin-top: 0.25rem; }
 .char-count.is-near { color: var(--bloom); font-weight: 700; }
 

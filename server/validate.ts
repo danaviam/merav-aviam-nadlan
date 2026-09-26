@@ -7,6 +7,7 @@ import {
   type PropertyInput,
   type PropertyStatus,
 } from '../shared/types.js';
+import { formatPhone, isValidPhone } from '../shared/phone.js';
 import { HttpError } from './errors.js';
 
 const str = (v: unknown, max = 200) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
@@ -101,8 +102,8 @@ export function parseContactInput(raw: unknown): ContactInput {
   if (!input.name) throw new HttpError(400, 'יש למלא שם');
   if (/https?:\/\/|www\./i.test(input.name)) throw new HttpError(400, 'השם אינו תקין');
   if (!input.phone && !input.email) throw new HttpError(400, 'יש למלא טלפון או אימייל');
-  if (input.phone && !/^[\d+\-\s()]{7,}$/.test(input.phone))
-    throw new HttpError(400, 'מספר הטלפון אינו תקין');
+  if (input.phone && !isValidPhone(input.phone)) throw new HttpError(400, 'מספר הטלפון אינו תקין');
+  if (input.phone) input.phone = formatPhone(input.phone);
   if (input.email && !EMAIL_RE.test(input.email)) throw new HttpError(400, 'כתובת האימייל אינה תקינה');
   return input;
 }
