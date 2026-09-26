@@ -1,4 +1,5 @@
 import {
+  CONTACT_LIMITS,
   DEAL_TYPES,
   PROPERTY_STATUSES,
   type ContactInput,
@@ -68,17 +69,37 @@ export function parsePropertyInput(raw: unknown): PropertyInput {
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+/**
+ * ניקוי טקסט חופשי מהגולש: תווי בקרה בלתי נראים ותגיות HTML נמחקים, ושורות ריקות רצופות מצומצמות.
+ * (התצוגה באתר ובמייל ממילא מציגה טקסט בלבד ולא מריצה HTML – זו שכבת הגנה נוספת)
+ */
+function cleanText(v: unknown, max: number, label: string, multiline = false): string {
+  if (typeof v !== 'string') return '';
+  let s = v
+    .normalize('NFC')
+    .replace(multiline ? /[\u0000-\u0008\u000B-\u001F\u007F-\u009F]/g : /[\u0000-\u001F\u007F-\u009F]/g, ' ')
+    .replace(/[\u200B\u2028\u2029\uFEFF]/g, '')
+    .replace(/<\/?[a-z!][^>]*>/gi, '')
+    .trim();
+  if (multiline) s = s.replace(/\r\n?/g, '\n').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n');
+  else s = s.replace(/\s+/g, ' ');
+  if (s.length > max) throw new HttpError(400, `${label} ארוך מדי (עד ${max} תווים)`);
+  return s;
+}
+
 export function parseContactInput(raw: unknown): ContactInput {
   const o = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
+  const L = CONTACT_LIMITS;
   const input: ContactInput = {
-    name: str(o.name, 80),
-    phone: str(o.phone, 30),
-    email: str(o.email, 120),
-    message: str(o.message, 3000),
+    name: cleanText(o.name, L.name, 'השם'),
+    phone: cleanText(o.phone, L.phone, 'מספר הטלפון'),
+    email: cleanText(o.email, L.email, 'האימייל'),
+    message: cleanText(o.message, L.message, 'תוכן ההודעה', true),
     propertyId: str(o.propertyId, 60) || undefined,
     website: str(o.website, 200),
   };
   if (!input.name) throw new HttpError(400, 'יש למלא שם');
+  if (/https?:\/\/|www\./i.test(input.name)) throw new HttpError(400, 'השם אינו תקין');
   if (!input.phone && !input.email) throw new HttpError(400, 'יש למלא טלפון או אימייל');
   if (input.phone && !/^[\d+\-\s()]{7,}$/.test(input.phone))
     throw new HttpError(400, 'מספר הטלפון אינו תקין');

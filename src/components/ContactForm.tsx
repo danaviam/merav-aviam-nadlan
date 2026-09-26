@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
+import { CONTACT_LIMITS as L } from '../../shared/types';
 import { api } from '../api';
 
 type Status = { kind: 'idle' } | { kind: 'sending' } | { kind: 'sent' } | { kind: 'error'; message: string };
@@ -52,21 +53,31 @@ export function ContactForm({
     <form className="form" onSubmit={submit} noValidate>
       <div className="field">
         <label htmlFor={id('name')}>שם מלא</label>
-        <input id={id('name')} autoComplete="name" required value={form.name} onChange={set('name')} />
+        <input id={id('name')} autoComplete="name" required maxLength={L.name} value={form.name} onChange={set('name')} />
       </div>
       <div className="field-row">
         <div className="field">
           <label htmlFor={id('phone')}>טלפון</label>
-          <input id={id('phone')} type="tel" dir="ltr" autoComplete="tel" inputMode="tel" value={form.phone} onChange={set('phone')} />
+          <input id={id('phone')} type="tel" dir="ltr" autoComplete="tel" inputMode="tel" maxLength={L.phone} value={form.phone} onChange={set('phone')} />
         </div>
         <div className="field">
           <label htmlFor={id('email')}>אימייל</label>
-          <input id={id('email')} type="email" dir="ltr" autoComplete="email" value={form.email} onChange={set('email')} />
+          <input id={id('email')} type="email" dir="ltr" autoComplete="email" maxLength={L.email} value={form.email} onChange={set('email')} />
         </div>
       </div>
       <div className="field">
         <label htmlFor={id('message')}>במה אפשר לעזור?</label>
-        <textarea id={id('message')} rows={4} value={form.message} onChange={set('message')} />
+        <textarea
+          id={id('message')}
+          rows={4}
+          maxLength={L.message}
+          aria-describedby={id('message-count')}
+          value={form.message}
+          onChange={set('message')}
+        />
+        <small id={id('message-count')} className={`char-count${form.message.length >= L.message * 0.9 ? ' is-near' : ''}`}>
+          {form.message.length}/{L.message}
+        </small>
       </div>
       {/* מלכודת לבוטים – מוסתר ממשתמשים אמיתיים */}
       <div className="hp" aria-hidden="true">
