@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { Outlet, Route, Routes, useLocation } from 'react-router-dom';
 import { AccessibilityMenu } from './components/AccessibilityMenu';
 import { Footer } from './components/Footer';
@@ -49,12 +50,20 @@ function ScrollManager() {
   return null;
 }
 
+/** מדידת מהירות טעינה של Vercel. כל עמודי הנכסים מקובצים יחד, ואיזור הניהול לא נמדד */
+function SpeedMetrics() {
+  const { pathname } = useLocation();
+  if (pathname.startsWith('/admin')) return null;
+  return <SpeedInsights route={pathname.startsWith('/property/') ? '/property/[id]' : pathname} />;
+}
+
 export default function App() {
   return (
     <>
       <ScrollManager />
       {/* סטטיסטיקת כניסות של Vercel, בלי עוגיות. לא סופרים את איזור הניהול */}
       <Analytics beforeSend={(e) => (new URL(e.url).pathname.startsWith('/admin') ? null : e)} />
+      <SpeedMetrics />
       <Routes>
         <Route element={<PublicLayout />}>
           <Route index element={<Home />} />
