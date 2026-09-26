@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { Outlet, Route, Routes, useLocation } from 'react-router-dom';
 import { AccessibilityMenu } from './components/AccessibilityMenu';
 import { Footer } from './components/Footer';
@@ -52,6 +53,8 @@ export default function App() {
   return (
     <>
       <ScrollManager />
+      {/* סטטיסטיקת כניסות של Vercel, בלי עוגיות. לא סופרים את איזור הניהול */}
+      <Analytics beforeSend={(e) => (new URL(e.url).pathname.startsWith('/admin') ? null : e)} />
       <Routes>
         <Route element={<PublicLayout />}>
           <Route index element={<Home />} />
