@@ -5,7 +5,16 @@ import express, { type NextFunction, type Request, type RequestHandler, type Res
 import multer from 'multer';
 import { handleUpload, type HandleUploadBody } from '@vercel/blob/client';
 import type { ContactMessage, Property } from '../shared/types.js';
-import { checkPassword, clearSession, isAdmin, issueSession, rateLimit, requireAdmin } from './auth.js';
+import {
+  checkPassword,
+  clearSession,
+  isAdmin,
+  isLoginLocked,
+  issueSession,
+  rateLimit,
+  recordLoginFailure,
+  requireAdmin,
+} from './auth.js';
 import { BLOB_UPLOADS, isBlobUrl, isLocalUpload, readDb, removeUpload, updateDb, UPLOAD_DIR } from './db.js';
 import { HttpError } from './errors.js';
 import { notifyNewMessage } from './mailer.js';
@@ -16,6 +25,16 @@ app.set('trust proxy', 1);
 app.disable('x-powered-by');
 app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser());
+
+// תקרה כללית לכל כתובת IP, מעבר להגבלות הספציפיות להתחברות ולטופס. גולש רגיל לא מתקרב אליה
+app.use('/api', rateLimit('api', 300, 5 * 60 * 1000, 'יותר מדי בקשות. נסו שוב בעוד כמה דקות.'));
+
+/**
+ * תשובות ציבוריות נשמרות ב-CDN של Vercel לחצי דקה, כך שעומס של גולשים (או התקפה) על דף הבית
+ * לא מגיע בכלל לשרת ולמסד הנתונים. נכס שעודכן יופיע באתר תוך חצי דקה לכל היותר.
+ */
+const publicCache = (res: Response) =>
+  res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=30, stale-while-revalidate=300');
 
 // Express 4 לא תופס שגיאות של פונקציות async בעצמו
 const ah =
@@ -92,6 +111,7 @@ app.get(
   '/api/properties',
   ah(async (_req, res) => {
     const db = await readDb();
+    publicCache(res);
     res.json(sortProperties(db.properties.filter((p) => p.status !== 'hidden')));
   }),
 );
@@ -102,6 +122,9 @@ app.get(
     const db = await readDb();
     const p = db.properties.find((x) => x.id === req.params.id);
     if (!p || (p.status === 'hidden' && !isAdmin(req))) throw new HttpError(404, 'הנכס לא נמצא');
+    // טיוטה שמוצגת למנהלת בלבד לא נשמרת במטמון המשותף
+    if (p.status === 'hidden') res.setHeader('Cache-Control', 'private, no-store');
+    else publicCache(res);
     res.json(p);
   }),
 );
@@ -142,13 +165,17 @@ app.post(
 app.post(
   '/api/admin/login',
   rateLimit('login', 8, 15 * 60 * 1000, 'יותר מדי ניסיונות התחברות. נסו שוב בעוד 15 דקות.'),
-  (req, res) => {
+  ah(async (req, res) => {
+    if (await isLoginLocked()) {
+      throw new HttpError(429, 'ההתחברות נחסמה זמנית בגלל ניסיונות חוזרים. נסו שוב בעוד שעה.');
+    }
     if (!checkPassword(req.body?.password)) {
+      await recordLoginFailure();
       return void res.status(401).json({ error: 'הסיסמה שגויה' });
     }
     issueSession(req, res);
     res.json({ admin: true });
-  },
+  }),
 );
 
 app.post('/api/admin/logout', (_req, res) => {
