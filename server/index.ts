@@ -11,16 +11,10 @@ const PORT = Number(process.env.PORT) || 3001;
 
 app.use('/uploads', express.static(UPLOAD_DIR, { maxAge: '30d', immutable: true }));
 
-/* ---------- הגשת האתר בפרודקשן (אחרי npm run build) ---------- */
+/* ---------- קבצי האתר בפרודקשן (אחרי npm run build). העמודים עצמם מוגשים דרך server/seo.ts ---------- */
 
 const DIST = path.resolve('dist');
-if (fs.existsSync(path.join(DIST, 'index.html'))) {
-  app.use(express.static(DIST, { index: false, maxAge: '1h' }));
-  app.get(/^\/(?!api\/|uploads\/).*/, (req, res) => {
-    if (req.path.startsWith('/admin')) res.setHeader('X-Robots-Tag', 'noindex, nofollow');
-    res.sendFile(path.join(DIST, 'index.html'));
-  });
-}
+if (fs.existsSync(DIST)) app.use(express.static(DIST, { index: false, maxAge: '1h' }));
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

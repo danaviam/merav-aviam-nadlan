@@ -18,6 +18,7 @@ import {
 import { BLOB_UPLOADS, isBlobUrl, isLocalUpload, readDb, removeUpload, updateDb, UPLOAD_DIR } from './db.js';
 import { HttpError } from './errors.js';
 import { notifyNewMessage } from './mailer.js';
+import { seo } from './seo.js';
 import { parseContactInput, parsePropertyInput } from './validate.js';
 
 export const app = express();
@@ -308,6 +309,10 @@ app.delete(
 app.use('/api', (_req, res) => {
   res.status(404).json({ error: 'לא נמצא' });
 });
+
+/* ---------- עמודי האתר, sitemap.xml ו-robots.txt (ראו server/seo.ts) ---------- */
+
+app.use(seo);
 
 /* ---------- טיפול בשגיאות ---------- */
 

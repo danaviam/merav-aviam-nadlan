@@ -67,7 +67,7 @@ export interface ContactMessage {
 }
 
 /** אורך מקסימלי לשדות טופס יצירת הקשר – נאכף גם בדפדפן וגם בשרת */
-export const CONTACT_LIMITS = { name: 60, phone: 20, email: 100, message: 1000 } as const;
+export const CONTACT_LIMITS = { name: 60, phone: 20, email: 64, message: 1000 } as const;
 
 export interface ContactInput {
   name: string;
