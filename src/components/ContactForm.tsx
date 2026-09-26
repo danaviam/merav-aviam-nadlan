@@ -74,7 +74,6 @@ export function ContactForm({
             dir="ltr"
             autoComplete="tel"
             inputMode="tel"
-            placeholder="050-1234567"
             maxLength={L.phone}
             value={form.phone}
             onChange={(e) => setForm((f) => ({ ...f, phone: formatPhone(e.target.value) }))}
