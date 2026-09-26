@@ -39,6 +39,8 @@ export const SITE = {
     youtube: '',
     linkedin: '',
   },
+  /** רשתות שיופיעו ככפתורים צפים מעל כפתור הוואטסאפ (רק אם יש להן קישור למעלה) */
+  floatingSocials: ['instagram', 'tiktok'],
 } as const;
 
 export type SocialKey = keyof typeof SITE.social;

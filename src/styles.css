@@ -317,9 +317,23 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 .social:hover { background: var(--bloom); }
 
-.wa-fab {
+.fab-stack {
   position: fixed; z-index: 30;
   bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px)); inset-inline-end: 1.25rem;
+  display: flex; flex-direction: column; align-items: center; gap: 0.6rem;
+}
+.fab-social {
+  width: 46px; height: 46px; border-radius: 50%;
+  display: grid; place-items: center; font-size: 1.35rem;
+  color: var(--white); box-shadow: var(--shadow); transition: transform 0.15s;
+}
+.fab-social:hover { transform: scale(1.08); }
+.fab-social--instagram { background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fd5949 45%, #d6249f 60%, #285aeb 90%); }
+.fab-social--tiktok { background: #010101; }
+.fab-social--facebook { background: #1877f2; }
+.fab-social--youtube { background: #ff0000; }
+.fab-social--linkedin { background: #0a66c2; }
+.wa-fab {
   width: 58px; height: 58px; border-radius: 50%;
   display: grid; place-items: center; font-size: 1.9rem;
   background: #1f9d55; color: var(--white); box-shadow: var(--shadow);

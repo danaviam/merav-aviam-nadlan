@@ -2,7 +2,7 @@ import type { IconType } from 'react-icons';
 import { FaFacebookF, FaInstagram, FaLinkedinIn, FaTiktok, FaWhatsapp, FaYoutube } from 'react-icons/fa6';
 import { SITE, type SocialKey } from '../config';
 
-const NETWORKS: Record<SocialKey, { icon: IconType; label: string }> = {
+export const NETWORKS: Record<SocialKey, { icon: IconType; label: string }> = {
   facebook: { icon: FaFacebookF, label: 'פייסבוק' },
   instagram: { icon: FaInstagram, label: 'אינסטגרם' },
   whatsapp: { icon: FaWhatsapp, label: 'וואטסאפ' },
