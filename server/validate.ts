@@ -102,6 +102,7 @@ export function parseContactInput(raw: unknown): ContactInput {
   if (!input.name) throw new HttpError(400, 'יש למלא שם');
   if (/https?:\/\/|www\./i.test(input.name)) throw new HttpError(400, 'השם אינו תקין');
   if (!input.phone && !input.email) throw new HttpError(400, 'יש למלא טלפון או אימייל');
+  if (!input.message && !input.website) throw new HttpError(400, 'יש לכתוב במה אפשר לעזור');
   if (input.phone && !isValidPhone(input.phone)) throw new HttpError(400, 'מספר הטלפון אינו תקין');
   if (input.phone) input.phone = formatPhone(input.phone);
   if (input.email && !EMAIL_RE.test(input.email)) throw new HttpError(400, 'כתובת האימייל אינה תקינה');

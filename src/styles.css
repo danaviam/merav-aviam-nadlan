@@ -421,6 +421,8 @@ html.a11y-cursor, html.a11y-cursor * {
 .site-footer__bottom a { text-decoration: none; }
 .site-footer__bottom a:hover { text-decoration: underline; }
 .form-note a { color: inherit; }
+.req { color: var(--bloom); font-weight: 700; }
+.field-hint { font-size: 0.85rem; color: var(--muted); margin: -0.25rem 0 0.75rem; }
 .field-error { display: block; color: var(--danger); font-size: 0.85rem; margin-top: 0.3rem; font-weight: 600; }
 input[aria-invalid='true'] { border-color: var(--danger) !important; }
 .char-count { display: block; text-align: end; font-size: 0.85rem; color: var(--muted); margin-top: 0.25rem; }
