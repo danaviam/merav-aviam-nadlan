@@ -326,6 +326,88 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 .wa-fab:hover { background: #17864a; }
 
+/* ===== תפריט נגישות ===== */
+.a11y-fab {
+  position: fixed; z-index: 40;
+  bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px)); inset-inline-start: 1.25rem;
+  width: 52px; height: 52px; border-radius: 50%; border: 3px solid var(--white);
+  display: grid; place-items: center; font-size: 1.6rem; cursor: pointer;
+  background: var(--sea); color: var(--white); box-shadow: var(--shadow);
+}
+.a11y-fab:hover { background: var(--sea-2); }
+.a11y-fab.is-active { background: var(--bloom); }
+.a11y {
+  position: fixed; z-index: 41;
+  bottom: calc(5.25rem + env(safe-area-inset-bottom, 0px)); inset-inline-start: 1.25rem;
+  width: min(340px, calc(100vw - 2rem)); max-height: calc(100vh - 7rem); overflow-y: auto;
+  background: var(--white); color: var(--ink); border: 1px solid var(--stone);
+  border-radius: var(--r-m); box-shadow: var(--shadow); padding: 1rem;
+  font-size: 1rem; line-height: 1.4;
+}
+.a11y[hidden] { display: none; }
+.a11y__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
+.a11y__head h2 { font-size: 1.25rem; margin: 0; color: var(--sea); }
+.a11y__close { background: none; border: 0; font-size: 1.25rem; cursor: pointer; padding: 0.4rem; color: var(--sea); }
+.a11y__size {
+  display: flex; align-items: center; gap: 0.5rem;
+  background: var(--stone-2); border-radius: var(--r-s); padding: 0.5rem 0.75rem; margin-bottom: 0.75rem;
+}
+.a11y__size span { flex: 1; font-weight: 700; }
+.a11y__size button {
+  width: 38px; height: 38px; border-radius: 50%; border: 2px solid var(--sea);
+  background: var(--white); color: var(--sea); cursor: pointer; display: grid; place-items: center;
+}
+.a11y__size button:disabled { opacity: 0.35; cursor: not-allowed; }
+.a11y__size output { min-width: 3.2em; text-align: center; font-weight: 700; }
+.a11y__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+.a11y__opt {
+  display: flex; flex-direction: column; align-items: center; gap: 0.35rem;
+  padding: 0.75rem 0.4rem; min-height: 78px; cursor: pointer; font-weight: 600; font-size: 0.95rem;
+  background: var(--white); color: var(--ink); border: 2px solid var(--stone); border-radius: var(--r-s);
+}
+.a11y__opt:hover { border-color: var(--sea); }
+.a11y__opt[aria-pressed='true'] { border-color: var(--sea); background: var(--sea); color: var(--white); }
+.a11y__icon { font-size: 1.3rem; line-height: 1; }
+.a11y__foot { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-top: 0.9rem; }
+.a11y__foot a { color: var(--sea); font-weight: 600; }
+.a11y__reset {
+  display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer; font-weight: 600;
+  background: none; border: 2px solid var(--stone); border-radius: var(--r-s); padding: 0.4rem 0.75rem; color: var(--ink);
+}
+.a11y__reset:disabled { opacity: 0.45; cursor: default; }
+
+/* ההגדרות עצמן (המחלקות נקבעות ב-src/a11y.ts). הפילטרים על <html> כדי לא לשבור אלמנטים קבועים */
+html.a11y-contrast-high { filter: contrast(1.45); }
+html.a11y-gray { filter: grayscale(1); }
+html.a11y-contrast-dark { filter: invert(1) hue-rotate(180deg); background: var(--white); }
+html.a11y-contrast-dark :is(img, video, picture) { filter: invert(1) hue-rotate(180deg); }
+html.a11y-links a { text-decoration: underline !important; text-underline-offset: 3px; outline: 2px solid #f5b700; outline-offset: 1px; }
+html.a11y-font body, html.a11y-font body :is(h1, h2, h3, h4, p, a, button, input, select, textarea, label, span, li, output) {
+  font-family: Arial, 'Segoe UI', sans-serif !important;
+}
+html.a11y-spacing body :is(p, li, a, span, label, h1, h2, h3, h4, dd, dt) {
+  letter-spacing: 0.06em !important; word-spacing: 0.16em !important; line-height: 1.9 !important;
+}
+html.a11y-no-motion { scroll-behavior: auto; }
+html.a11y-no-motion *, html.a11y-no-motion *::before, html.a11y-no-motion *::after {
+  transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important;
+}
+html.a11y-cursor, html.a11y-cursor * {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 24 24'%3E%3Cpath d='M4 2l16 11-7 1.2 4 7.3-3 1.5-4-7.4L4 20z' fill='%23000' stroke='%23fff' stroke-width='1.5'/%3E%3C/svg%3E") 6 3, auto !important;
+}
+
+/* ===== עמודים משפטיים ===== */
+.legal { max-width: 780px; padding-block: 2.5rem 4rem; }
+.legal h1 { color: var(--sea); font-size: 2.25rem; }
+.legal h2 { color: var(--sea); font-size: 1.35rem; margin-top: 2rem; }
+.legal ul { padding-inline-start: 1.25rem; }
+.legal li { margin-bottom: 0.4rem; }
+.legal__updated { color: var(--muted); font-size: 0.95rem; }
+.site-footer__legal { display: flex; flex-wrap: wrap; gap: 0.4rem 1.1rem; }
+.site-footer__bottom a { text-decoration: none; }
+.site-footer__bottom a:hover { text-decoration: underline; }
+.form-note a { color: inherit; }
+
 /* ===== עמוד נכס ===== */
 .page-pad { padding-block: 1.5rem 4rem; }
 .page-message { padding-block: 5rem; text-align: center; }

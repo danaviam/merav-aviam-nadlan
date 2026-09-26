@@ -1,14 +1,22 @@
 import { useEffect, useRef, useState, type PointerEvent } from 'react';
+import { A11Y_EVENT } from './a11y';
 
+/** הגדרת המערכת "הפחתת תנועה", או "עצירת אנימציות" בתפריט הנגישות */
 export function usePrefersReducedMotion() {
-  const [reduced, setReduced] = useState(
-    () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches,
-  );
+  const check = () =>
+    typeof window !== 'undefined' &&
+    (window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+      document.documentElement.classList.contains('a11y-no-motion'));
+  const [reduced, setReduced] = useState(check);
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const onChange = () => setReduced(mq.matches);
+    const onChange = () => setReduced(check());
     mq.addEventListener('change', onChange);
-    return () => mq.removeEventListener('change', onChange);
+    window.addEventListener(A11Y_EVENT, onChange);
+    return () => {
+      mq.removeEventListener('change', onChange);
+      window.removeEventListener(A11Y_EVENT, onChange);
+    };
   }, []);
   return reduced;
 }

@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { Link } from 'react-router-dom';
 import { api } from '../api';
 
 type Status = { kind: 'idle' } | { kind: 'sending' } | { kind: 'sent' } | { kind: 'error'; message: string };
@@ -80,7 +81,10 @@ export function ContactForm({
       <button className="btn btn--bloom btn--block" disabled={status.kind === 'sending' || !form.name.trim()}>
         {status.kind === 'sending' ? 'שולח…' : 'שליחת הודעה'}
       </button>
-      <p className="form-note">הפרטים משמשים רק כדי לחזור אליכם.</p>
+      <p className="form-note">
+        הפרטים משמשים רק כדי לחזור אליכם ולתת לכם שירות. מסירתם אינה חובה, אבל בלעדיהם לא נוכל לחזור אליכם.
+        פרטים נוספים ב<Link to="/privacy">מדיניות הפרטיות</Link>.
+      </p>
     </form>
   );
 }

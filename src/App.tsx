@@ -1,11 +1,13 @@
 import { useEffect } from 'react';
 import { Outlet, Route, Routes, useLocation } from 'react-router-dom';
+import { AccessibilityMenu } from './components/AccessibilityMenu';
 import { Footer } from './components/Footer';
 import { Header } from './components/Header';
 import { WhatsAppFab } from './components/WhatsAppFab';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminLogin from './pages/AdminLogin';
 import Home from './pages/Home';
+import { AccessibilityPage, PrivacyPage, TermsPage } from './pages/Legal';
 import NotFound from './pages/NotFound';
 import PropertyPage from './pages/PropertyPage';
 
@@ -19,6 +21,7 @@ function PublicLayout() {
       </main>
       <Footer />
       <WhatsAppFab />
+      <AccessibilityMenu />
     </>
   );
 }
@@ -53,6 +56,9 @@ export default function App() {
         <Route element={<PublicLayout />}>
           <Route index element={<Home />} />
           <Route path="property/:id" element={<PropertyPage />} />
+          <Route path="privacy" element={<PrivacyPage />} />
+          <Route path="terms" element={<TermsPage />} />
+          <Route path="accessibility" element={<AccessibilityPage />} />
           <Route path="*" element={<NotFound />} />
         </Route>
         <Route path="admin/login" element={<AdminLogin />} />

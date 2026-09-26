@@ -11,6 +11,14 @@ export const SITE = {
   email: 'noa@example.co.il',
   officeAddress: 'רחוב הרצל 1, ראשון לציון',
   license: 'רישיון תיווך מס׳ 0000000',
+  /** לעמודי מדיניות הפרטיות, תנאי השימוש והצהרת הנגישות */
+  legal: {
+    updated: '26 בספטמבר 2026',
+    /** בתי המשפט שיהיו מוסמכים בתנאי השימוש */
+    courts: 'מחוז מרכז',
+    /** רכז/ת הנגישות. ריק = פרטי הסוכנת */
+    accessibilityContact: { name: '', phone: '', email: '' },
+  },
   /** כתובת תמונה של הסוכנת (אפשר גם קובץ בתיקיית public, למשל '/agent.jpg') */
   agentPhoto: '',
   about: [
