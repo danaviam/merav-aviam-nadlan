@@ -216,7 +216,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .card__media { position: relative; aspect-ratio: 4 / 3; background: var(--sea); }
 .card__media > img, .card__media > .placeholder { width: 100%; height: 100%; object-fit: cover; }
 .card.is-sold .card__media > img { filter: grayscale(0.85); }
-.card__count { position: absolute; bottom: 0.7rem; inset-inline-end: 0.7rem; background: rgba(10, 43, 54, 0.8); color: var(--white); font-size: 0.85rem; padding: 0.15rem 0.6rem; border-radius: 999px; }
+.card__count { position: absolute; bottom: 0.7rem; inset-inline-start: 0.7rem; background: rgba(10, 43, 54, 0.8); color: var(--white); font-size: 0.85rem; padding: 0.15rem 0.6rem; border-radius: 999px; }
 .card__body { padding: 1.1rem 1.25rem 1.3rem; }
 .card__price { font-family: var(--font-display); font-size: 1.5rem; color: var(--sea); margin-bottom: 0.15rem; }
 .card__title { font-family: var(--font-body); font-weight: 700; font-size: 1.1rem; margin-bottom: 0.2rem; }
@@ -443,7 +443,8 @@ html.a11y-no-motion .nf-hook { animation: none; }
 .back-link:hover { text-decoration: underline; }
 
 .prop { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(300px, 1fr); gap: clamp(1.5rem, 4vw, 3rem); align-items: start; }
-.prop__aside { position: sticky; top: calc(var(--header-h) + 1.25rem); display: grid; gap: 1.25rem; }
+.prop__main { min-width: 0; }
+.prop__aside { position: sticky; top: calc(var(--header-h) + 1.25rem); display: grid; gap: 1.25rem; min-width: 0; }
 .prop__head { margin-top: 1.75rem; }
 .prop__head h1 { font-size: clamp(1.9rem, 4vw, 2.6rem); color: var(--sea-ink); }
 .prop__location { color: var(--muted); font-weight: 600; margin-bottom: 0.25rem; }
