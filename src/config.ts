@@ -4,13 +4,13 @@
  */
 export const SITE = {
   agentName: 'מירב אביעם',
-  tagline: 'תיווך ושיווק נדל״ן בשפלה',
-  phone: '050-123-4567',
+  tagline: 'תיווך ושיווק נדל״ן בבאר שבע',
+  phone: '052-4294612',
   /** מספר בפורמט בינלאומי, בלי + ובלי 0 בהתחלה */
-  whatsapp: '972501234567',
-  email: 'noa@example.co.il',
-  officeAddress: 'רחוב הרצל 1, ראשון לציון',
-  license: 'רישיון תיווך מס׳ 0000000',
+  whatsapp: '972524294612',
+  email: 'merav@aviam.co.il',
+  officeAddress: 'באר שבע',
+  license: 'רישיון תיווך מס׳ 3242751',
   /** לעמודי מדיניות הפרטיות, תנאי השימוש והצהרת הנגישות */
   legal: {
     updated: '26 בספטמבר 2026',
@@ -32,10 +32,10 @@ export const SITE = {
     { title: 'משא ומתן וחתימה', text: 'ליווי מול עורכי הדין והבנקים עד מסירת המפתח.' },
   ],
   social: {
-    facebook: 'https://facebook.com/',
-    instagram: 'https://instagram.com/',
-    whatsapp: 'https://wa.me/972501234567',
-    tiktok: '',
+    facebook: 'https://www.facebook.com/merav.aviam',
+    instagram: 'https://instagram.com/merav_aviam',
+    whatsapp: 'https://wa.me/972524294612',
+    tiktok: 'https://tiktok.com/meravaviam',
     youtube: '',
     linkedin: '',
   },
