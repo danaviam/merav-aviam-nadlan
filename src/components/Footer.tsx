@@ -5,14 +5,9 @@ export function Footer() {
   return (
     <footer className="site-footer">
       <div className="container site-footer__inner">
-        <div>
-          <p className="site-footer__name">{SITE.agentName}</p>
-          <p className="site-footer__muted">{SITE.tagline}</p>
-          <p className="site-footer__muted">{SITE.license}</p>
-        </div>
-        <address className="site-footer__contact">
-          <span>{SITE.officeAddress}</span>
-        </address>
+        <p className="site-footer__name">{SITE.agentName}</p>
+        <p className="site-footer__muted">{SITE.tagline}</p>
+        <p className="site-footer__muted">{SITE.license}</p>
       </div>
       <div className="container site-footer__bottom">
         <span>© {new Date().getFullYear()} {SITE.agentName}. כל הזכויות שמורות.</span>
