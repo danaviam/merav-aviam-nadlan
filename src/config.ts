@@ -35,7 +35,7 @@ export const SITE = {
     facebook: 'https://www.facebook.com/merav.aviam',
     instagram: 'https://instagram.com/merav_aviam',
     whatsapp: 'https://wa.me/972524294612',
-    tiktok: 'https://tiktok.com/meravaviam',
+    tiktok: '',
     youtube: '',
     linkedin: '',
   },
