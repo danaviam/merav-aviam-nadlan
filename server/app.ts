@@ -52,7 +52,7 @@ const MIME_EXT: Record<string, string> = {
   'image/webp': '.webp',
   'image/avif': '.avif',
 };
-const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+const MAX_IMAGE_BYTES = 3 * 1024 * 1024;
 
 // מקומי: הדפדפן שולח קובץ אחד בכל בקשה והוא נשמר בתיקיית uploads
 const upload = multer({
