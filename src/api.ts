@@ -27,6 +27,59 @@ const json = (method: string, data: unknown): RequestInit => ({
   body: JSON.stringify(data),
 });
 
+/** מכווץ תמונה לפני העלאה — מקצר גדלים ומפחית איכות */
+async function compressImage(file: File): Promise<File> {
+  const MAX_SIDE = 1920;   // פיקסלים
+  const QUALITY  = 0.82;  // 82% איכות JPEG
+  const MIN_SIZE = 300 * 1024; // קבצים קטנים מ-300KB עוברים ללא שינוי
+
+  if (file.size < MIN_SIZE) return file;
+
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+
+      let { width, height } = img;
+
+      // שינוי גודל רק אם גדול מ-MAX_SIDE
+      if (width > MAX_SIDE || height > MAX_SIDE) {
+        if (width >= height) {
+          height = Math.round((height / width) * MAX_SIDE);
+          width  = MAX_SIDE;
+        } else {
+          width  = Math.round((width / height) * MAX_SIDE);
+          height = MAX_SIDE;
+        }
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width  = width;
+      canvas.height = height;
+      canvas.getContext('2d')!.drawImage(img, 0, 0, width, height);
+
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) return reject(new Error('כיווץ התמונה נכשל'));
+          const name = file.name.replace(/\.[^.]+$/, '.jpg');
+          resolve(new File([blob], name, { type: 'image/jpeg' }));
+        },
+        'image/jpeg',
+        QUALITY,
+      );
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      resolve(file); // אם נכשל — ממשיכים עם הקובץ המקורי
+    };
+
+    img.src = objectUrl;
+  });
+}
+
 export const api = {
   listProperties: () => request<Property[]>('/api/properties'),
   getProperty: (id: string) => request<Property>(`/api/properties/${encodeURIComponent(id)}`),
@@ -39,19 +92,21 @@ export const api = {
   adminListProperties: () => request<Property[]>('/api/admin/properties'),
   /** מעלה תמונה אחת ומחזיר את הכתובת שלה (בענן: ישירות ל-Vercel Blob, מקומית: לשרת) */
   uploadImage: async (file: File): Promise<string> => {
+    const compressed = await compressImage(file); // ← כיווץ לפני העלאה
+
     const { blobUploads } = await api.me();
     if (!blobUploads) {
       const fd = new FormData();
-      fd.append('file', file);
+      fd.append('file', compressed);
       return (await request<{ url: string }>('/api/admin/upload', { method: 'POST', body: fd })).url;
     }
     const { upload } = await import('@vercel/blob/client');
-    const ext = file.type.split('/')[1]?.replace('jpeg', 'jpg') ?? 'jpg';
+    const ext = compressed.type.split('/')[1]?.replace('jpeg', 'jpg') ?? 'jpg';
     try {
-      const blob = await upload(`properties/${crypto.randomUUID()}.${ext}`, file, {
+      const blob = await upload(`properties/${crypto.randomUUID()}.${ext}`, compressed, {
         access: 'public',
         handleUploadUrl: '/api/admin/upload',
-        contentType: file.type,
+        contentType: compressed.type,
       });
       return blob.url;
     } catch (err) {
