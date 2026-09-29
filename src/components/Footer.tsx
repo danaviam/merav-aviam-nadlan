@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
 import { SITE, telHref } from '../config';
-import { SocialLinks } from './SocialLinks';
 
 export function Footer() {
   return (
@@ -16,10 +15,6 @@ export function Footer() {
           <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
           <span>{SITE.officeAddress}</span>
         </address>
-        <div>
-          <p className="site-footer__label">עקבו אחריי</p>
-          <SocialLinks />
-        </div>
       </div>
       <div className="container site-footer__bottom">
         <span>© {new Date().getFullYear()} {SITE.agentName}. כל הזכויות שמורות.</span>

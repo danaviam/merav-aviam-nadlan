@@ -297,10 +297,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 /* ===== כותרת תחתונה ===== */
 .site-footer { background: var(--sea-ink); color: var(--white); padding-top: 3rem; }
-.site-footer__inner { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 2rem; padding-bottom: 2rem; }
+.site-footer__inner { display: grid; grid-template-columns: 1.2fr 1fr; gap: 2rem; padding-bottom: 2rem; }
 .site-footer__name { font-family: var(--font-display); font-size: 1.6rem; margin-bottom: 0.25rem; }
 .site-footer__muted { opacity: 0.72; margin-bottom: 0.2rem; }
-.site-footer__label { font-weight: 700; margin-bottom: 0.7rem; }
 .site-footer__contact { font-style: normal; display: grid; gap: 0.35rem; align-content: start; }
 .site-footer__contact a { text-decoration: none; }
 .site-footer__contact a[dir="ltr"] { text-align: right; }
