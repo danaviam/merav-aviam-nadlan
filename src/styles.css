@@ -300,7 +300,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .site-footer { background: var(--sea-ink); color: var(--white); padding-top: 3rem; }
 .site-footer__inner { padding-bottom: 2rem; }
 .site-footer__name { font-family: var(--font-display); font-size: 1.6rem; margin-bottom: 0.25rem; color: #1E1E1E }
-.site-footer__muted { opacity: 0.72; margin-bottom: 0.2rem; }
+.site-footer__muted { opacity: 0.72; margin-bottom: 0.2rem; color: #1E1E1E }
 .site-footer__bottom {
   display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;
   border-top: 1px solid rgba(255, 255, 255, 0.14); padding-block: 1.1rem 1.4rem;
