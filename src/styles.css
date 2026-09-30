@@ -415,7 +415,7 @@ html.a11y-cursor, html.a11y-cursor * {
 .legal ul { padding-inline-start: 1.25rem; }
 .legal li { margin-bottom: 0.4rem; }
 .legal__updated { color: var(--muted); font-size: 0.95rem; }
-.site-footer__legal { display: flex; flex-wrap: wrap; gap: 0.4rem 1.1rem; }
+.site-footer__legal { display: flex; flex-wrap: wrap; gap: 0.4rem 1.1rem; color: #1E1E1E }
 .site-footer__bottom a { text-decoration: none; }
 .site-footer__bottom a:hover { text-decoration: underline; }
 .form-note a { color: inherit; }
