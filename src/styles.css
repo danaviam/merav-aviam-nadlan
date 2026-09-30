@@ -3,8 +3,9 @@
 :root {
   --sea: #0f3d4c;
   --sea-2: #185467;
-  --sea-ink: #0a2b36;
-  --paper: #f7f8f6;
+  /* --sea-ink: #0a2b36;  */
+   --Muslin: #F5F2EC
+   --paper: #f7f8f6;
   --white: #ffffff;
   --stone: #e3e6e2;
   --stone-2: #eef0ec;
