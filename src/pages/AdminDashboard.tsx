@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { FaPen, FaPlus, FaStar, FaTrash } from 'react-icons/fa6';
+import { FaPen, FaPlus, FaRegStar, FaStar, FaTrash } from 'react-icons/fa6';
 import { Link, useNavigate } from 'react-router-dom';
 import type { ContactMessage, Property, PropertyStatus } from '../../shared/types';
 import { api, ApiError } from '../api';
@@ -173,7 +173,7 @@ export default function AdminDashboard() {
                           </select>
                         </label>
                         <button type="button" className="btn btn--ghost btn--small" aria-pressed={p.featured} onClick={() => patch(p, { featured: !p.featured })}>
-                          <FaStar aria-hidden /> {p.featured ? 'בקרוסלה' : 'לקרוסלה'}
+                          {p.featured ? <FaStar aria-hidden /> : <FaRegStar aria-hidden />} {p.featured ? 'בקרוסלה' : 'לקרוסלה'}
                         </button>
                         <button type="button" className="btn btn--ghost btn--small" onClick={() => setEditing(p)}>
                           <FaPen aria-hidden /> עריכה
