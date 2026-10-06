@@ -90,7 +90,7 @@ export default function PropertyPage() {
             </span>
             <p className="price-panel__price">{formatPrice(p)}</p>
             <div className="price-panel__actions">
-              <a className="btn btn--sea" href={telHref}>
+              <a className="btn btn--bloom" href={telHref}>
                 <FaPhone aria-hidden /> התקשרו
               </a>
               <a className="btn btn--ghost" href={whatsappHref(waText)} target="_blank" rel="noopener noreferrer">
