@@ -17,8 +17,8 @@ export function Footer() {
             <Link to="/terms">תנאי שימוש</Link>
             <Link to="/accessibility">הצהרת נגישות</Link>
           </nav>
+          <Link to="/admin" className="site-footer__admin">כניסת ניהול</Link>
         </div>
-        <Link to="/admin" className="site-footer__admin">כניסת ניהול</Link>
       </div>
     </footer>
   );
