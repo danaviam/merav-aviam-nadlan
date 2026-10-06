@@ -219,7 +219,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .card.is-sold .card__media > img { filter: grayscale(0.85); }
 .card__count { position: absolute; bottom: 0.7rem; inset-inline-start: 0.7rem; background: rgba(10, 43, 54, 0.8); color: var(--white); font-size: 0.85rem; padding: 0.15rem 0.6rem; border-radius: 999px; }
 .card__body { padding: 1.1rem 1.25rem 1.3rem; }
-.card__price { font-family: var(--font-display); font-size: 1.5rem; color: var(--sea); margin-bottom: 0.15rem; }
+.card__price { font-family: 'Rubik', var(--font-body); font-weight: 600; font-size: 1.45rem; color: var(--sea); margin-bottom: 0.15rem; }
 .card__title { font-family: var(--font-body); font-weight: 700; font-size: 1.1rem; margin-bottom: 0.2rem; }
 .card__location { color: var(--muted); margin-bottom: 0.5rem; }
 .card__facts { font-size: 0.95rem; margin: 0; padding-top: 0.6rem; border-top: 1px solid var(--stone-2); }
@@ -302,7 +302,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .site-footer__name { font-family: var(--font-display); font-size: 1.6rem; margin-bottom: 0.25rem; color: #B8336A }
 .site-footer__muted { opacity: 0.72; margin-bottom: 0.2rem; color: #1E1E1E }
 .site-footer__bottom {
-  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;
+  display: flex; flex-direction: column; gap: 0.75rem;
   border-top: 1px solid rgba(255, 255, 255, 0.14); padding-block: 1.1rem 1.4rem;
   font-size: 0.875rem; opacity: 0.72; color: #1E1E1E;
 }
@@ -317,7 +317,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 .fab-stack {
   position: fixed; z-index: 30;
-  bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px)); inset-inline-end: 1.25rem;
+  bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px)); inset-inline-end: 1.25rem;
   display: flex; flex-direction: column; align-items: center; gap: 0.6rem;
 }
 .fab-social {
@@ -415,7 +415,9 @@ html.a11y-cursor, html.a11y-cursor * {
 .legal ul { padding-inline-start: 1.25rem; }
 .legal li { margin-bottom: 0.4rem; }
 .legal__updated { color: var(--muted); font-size: 0.95rem; }
-.site-footer__legal { display: flex; flex-wrap: wrap; gap: 0.4rem 1.1rem; color: #1E1E1E }
+.site-footer__line { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 0.4rem 1.1rem; text-align: center; }
+.site-footer__legal { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.4rem 1.1rem; color: #1E1E1E }
+.site-footer__admin { margin-right: auto; color: #6B6B6B; }
 .site-footer__bottom a { text-decoration: none; }
 .site-footer__bottom a:hover { text-decoration: underline; }
 .form-note a { color: inherit; }

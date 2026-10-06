@@ -10,13 +10,15 @@ export function Footer() {
         <p className="site-footer__muted">{SITE.license}</p>
       </div>
       <div className="container site-footer__bottom">
-        <span>© {new Date().getFullYear()} {SITE.agentName}. כל הזכויות שמורות.</span>
-        <nav className="site-footer__legal" aria-label="מידע משפטי">
-          <Link to="/privacy">מדיניות פרטיות</Link>
-          <Link to="/terms">תנאי שימוש</Link>
-          <Link to="/accessibility">הצהרת נגישות</Link>
-          <Link to="/admin">כניסת ניהול</Link>
-        </nav>
+        <div className="site-footer__line">
+          <span>© {new Date().getFullYear()} {SITE.agentName}. כל הזכויות שמורות.</span>
+          <nav className="site-footer__legal" aria-label="מידע משפטי">
+            <Link to="/privacy">מדיניות פרטיות</Link>
+            <Link to="/terms">תנאי שימוש</Link>
+            <Link to="/accessibility">הצהרת נגישות</Link>
+          </nav>
+        </div>
+        <Link to="/admin" className="site-footer__admin">כניסת ניהול</Link>
       </div>
     </footer>
   );
