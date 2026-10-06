@@ -3,7 +3,6 @@ import { promises as fs } from 'node:fs';
 import cookieParser from 'cookie-parser';
 import express, { type NextFunction, type Request, type RequestHandler, type Response } from 'express';
 import multer from 'multer';
-import { handleUpload, type HandleUploadBody } from '@vercel/blob/client';
 import type { ContactMessage, Property } from '../shared/types.js';
 import {
   checkPassword,
@@ -15,7 +14,19 @@ import {
   recordLoginFailure,
   requireAdmin,
 } from './auth.js';
-import { BLOB_UPLOADS, isBlobUrl, isLocalUpload, readDb, removeUpload, updateDb, UPLOAD_DIR } from './db.js';
+import {
+  BUCKET,
+  CLOUD_UPLOADS,
+  cloudUploadUrl,
+  isCloudUpload,
+  isLocalUpload,
+  readDb,
+  removeUpload,
+  supabase,
+  SUPABASE_PUBLIC_KEY,
+  updateDb,
+  UPLOAD_DIR,
+} from './db.js';
 import { HttpError } from './errors.js';
 import { notifyNewMessage } from './mailer.js';
 import { seo } from './seo.js';
@@ -69,34 +80,44 @@ const upload = multer({
   },
 });
 
+let bucketReady: Promise<unknown> | null = null;
+const ensureBucket = () =>
+  (bucketReady ??= supabase!.storage
+    .createBucket(BUCKET, { public: true, fileSizeLimit: MAX_IMAGE_BYTES, allowedMimeTypes: Object.keys(MIME_EXT) })
+    .then(({ error }) => {
+      // "already exists" הוא המצב הרגיל
+      if (error && !/exist/i.test(error.message)) throw error;
+    })
+    .catch((err) => {
+      bucketReady = null;
+      throw err;
+    }));
+
 /**
- * בענן: הדפדפן מעלה את התמונה ישירות ל-Vercel Blob (עוקף את מגבלת 4.5MB לבקשה ב-Vercel),
- * והשרת רק מאשר את ההעלאה אחרי שבדק שהמשתמש מחובר.
+ * בענן: הדפדפן מעלה את התמונה ישירות ל-Supabase Storage (עוקף את מגבלת 4.5MB לבקשה ב-Vercel),
+ * והשרת רק מנפיק כתובת העלאה חתומה אחרי שבדק שהמשתמש מחובר.
  */
 app.post(
   '/api/admin/upload',
   requireAdmin,
-  (req, res, next) => (BLOB_UPLOADS ? next() : upload.single('file')(req, res, next)),
+  (req, res, next) => (CLOUD_UPLOADS ? next() : upload.single('file')(req, res, next)),
   ah(async (req, res) => {
-    if (!BLOB_UPLOADS) {
+    if (!CLOUD_UPLOADS) {
       if (!req.file) throw new HttpError(400, 'לא התקבלה תמונה');
       return void res.status(201).json({ url: `/uploads/${req.file.filename}` });
     }
-    const result = await handleUpload({
-      body: req.body as HandleUploadBody,
-      request: req,
-      onBeforeGenerateToken: async () => ({
-        allowedContentTypes: Object.keys(MIME_EXT),
-        maximumSizeInBytes: MAX_IMAGE_BYTES,
-        addRandomSuffix: true,
-      }),
-    });
-    res.json(result);
+    const ext = MIME_EXT[String(req.body?.contentType)];
+    if (!ext) throw new HttpError(400, 'אפשר להעלות רק תמונות JPG, PNG, WEBP או AVIF');
+    await ensureBucket();
+    const path = `properties/${crypto.randomUUID()}${ext}`;
+    const { data, error } = await supabase!.storage.from(BUCKET).createSignedUploadUrl(path);
+    if (error) throw error;
+    res.json({ uploadUrl: data.signedUrl, url: cloudUploadUrl(path) });
   }),
 );
 
 const isExternalImage = (url: string) => /^https:\/\/\S+$/i.test(url);
-const isNewImage = (url: string) => isBlobUrl(url) || isLocalUpload(url) || isExternalImage(url);
+const isNewImage = (url: string) => isCloudUpload(url) || isLocalUpload(url) || isExternalImage(url);
 
 /* ---------- API ציבורי ---------- */
 
@@ -185,7 +206,7 @@ app.post('/api/admin/logout', (_req, res) => {
 });
 
 app.get('/api/admin/me', (req, res) => {
-  res.json({ admin: isAdmin(req), blobUploads: BLOB_UPLOADS });
+  res.json({ admin: isAdmin(req), cloudUploads: CLOUD_UPLOADS, uploadKey: CLOUD_UPLOADS ? SUPABASE_PUBLIC_KEY : undefined });
 });
 
 /* ---------- ניהול נכסים (מוגן) ---------- */

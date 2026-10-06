@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import type { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
-import { redis } from './db.js';
+import { supabase } from './db.js';
 
 const COOKIE = 'admin_token';
 const MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
@@ -60,7 +60,7 @@ export function requireAdmin(req: Request, res: Response, next: NextFunction) {
 }
 
 /**
- * מונה בקשות בחלון זמן. בענן הספירה נשמרת ב-Redis (כי כל בקשה יכולה לרוץ במופע אחר של השרת),
+ * מונה בקשות בחלון זמן. בענן הספירה נשמרת ב-Supabase (כי כל בקשה יכולה לרוץ במופע אחר של השרת),
  * ומקומית בזיכרון.
  */
 function counter(name: string, windowMs: number) {
@@ -78,15 +78,14 @@ function counter(name: string, windowMs: number) {
     return (entry.count += add);
   }
 
-  async function inRedis(key: string, add: number) {
-    const redisKey = `nadlan:rl:${name}:${key}`;
-    if (!add) return Number((await redis!.get<number>(redisKey)) ?? 0);
-    const [count] = await redis!.multi().incr(redisKey).pexpire(redisKey, windowMs, 'NX').exec<[number, number]>();
-    return count;
+  async function inCloud(key: string, add: number) {
+    const { data, error } = await supabase!.rpc('rl_hit', { k: `${name}:${key}`, add, window_ms: windowMs });
+    if (error) throw error;
+    return Number(data);
   }
 
   const count = (key: string, add: number) =>
-    redis ? inRedis(key, add).catch(() => inMemory(key, add)) : Promise.resolve(inMemory(key, add));
+    supabase ? inCloud(key, add).catch(() => inMemory(key, add)) : Promise.resolve(inMemory(key, add));
   return {
     /** מוסיף 1 ומחזיר את הספירה */
     hit: (key: string) => count(key, 1),
