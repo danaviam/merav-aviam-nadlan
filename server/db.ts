@@ -1,6 +1,7 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
-import { createClient } from '@supabase/supabase-js';
+import { Redis } from '@upstash/redis';
+import { del } from '@vercel/blob';
 import type { ContactMessage, Property } from '../shared/types.js';
 import { seedProperties } from './seed.js';
 
@@ -15,56 +16,49 @@ export interface Database {
 
 /**
  * שני מצבי אחסון:
- * - בענן (Vercel): הנתונים בטבלת kv ב-Supabase והתמונות ב-Supabase Storage. מופעל כשמשתני הסביבה שלהם מוגדרים.
+ * - בענן (Vercel): הנתונים ב-Upstash Redis והתמונות ב-Vercel Blob. מופעל כשמשתני הסביבה שלהם מוגדרים.
  * - מקומי: קובץ JSON ותיקיית תמונות בתוך DATA_DIR.
  */
-const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-export const supabase =
-  SUPABASE_URL && SUPABASE_KEY ? createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false } }) : null;
-export const CLOUD_UPLOADS = Boolean(supabase);
-export const BUCKET = 'uploads';
-export const SUPABASE_PUBLIC_KEY = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-export const SUPABASE_PUBLIC_URL = SUPABASE_URL ?? '';
+const REDIS_URL = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
+const REDIS_TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+export const redis = REDIS_URL && REDIS_TOKEN ? new Redis({ url: REDIS_URL, token: REDIS_TOKEN }) : null;
+export const BLOB_UPLOADS = Boolean(process.env.BLOB_READ_WRITE_TOKEN);
 
-if (process.env.VERCEL && !supabase) {
-  console.error('⚠️  Supabase is not connected – data will not be saved. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.');
+if (process.env.VERCEL && !redis) {
+  console.error('⚠️  Upstash Redis is not connected – data will not be saved. Connect it in Vercel → Storage.');
 }
 
 function normalize(db: Partial<Database>): Database {
   return { properties: db.properties ?? [], messages: db.messages ?? [] };
 }
 
-/* ---------- Supabase ---------- */
+/* ---------- Redis ---------- */
 
 const KEY = 'nadlan:db';
+const VERSION_KEY = 'nadlan:db:version';
 
-async function cloudRead(c: NonNullable<typeof supabase>): Promise<{ db: Database; version: number }> {
-  const { data, error } = await c.from('kv').select('value, version').eq('key', KEY).maybeSingle();
-  if (error) throw error;
-  if (data) return { db: normalize(data.value as Database), version: Number(data.version) };
+// שומר רק אם אף אחד אחר לא כתב בינתיים (כדי ששתי בקשות במקביל לא ידרסו זו את זו)
+const CAS_SCRIPT = `
+local v = redis.call('GET', KEYS[2]) or '0'
+if v ~= ARGV[1] then return 0 end
+redis.call('SET', KEYS[1], ARGV[2])
+redis.call('INCR', KEYS[2])
+return 1`;
+
+async function redisRead(r: Redis): Promise<{ db: Database; version: string }> {
+  const [raw, version] = await r.mget<[Database | null, number | string | null]>(KEY, VERSION_KEY);
+  if (raw) return { db: normalize(raw), version: String(version ?? 0) };
   const db = { properties: seedProperties(), messages: [] };
-  // התעלמות מכפילות: אם בקשה אחרת כבר יצרה את הרשומה, קוראים אותה מחדש
-  const { error: insertError } = await c
-    .from('kv')
-    .upsert({ key: KEY, value: db, version: 0 }, { onConflict: 'key', ignoreDuplicates: true });
-  if (insertError) throw insertError;
-  return cloudRead(c);
+  await r.eval(CAS_SCRIPT, [KEY, VERSION_KEY], ['0', JSON.stringify(db)]);
+  return redisRead(r);
 }
 
-async function cloudUpdate<T>(c: NonNullable<typeof supabase>, fn: (db: Database) => T | Promise<T>): Promise<T> {
+async function redisUpdate<T>(r: Redis, fn: (db: Database) => T | Promise<T>): Promise<T> {
   for (let attempt = 0; attempt < 8; attempt++) {
-    const { db, version } = await cloudRead(c);
+    const { db, version } = await redisRead(r);
     const result = await fn(db);
-    // שומר רק אם אף אחד אחר לא כתב בינתיים (כדי ששתי בקשות במקביל לא ידרסו זו את זו)
-    const { data, error } = await c
-      .from('kv')
-      .update({ value: db, version: version + 1 })
-      .eq('key', KEY)
-      .eq('version', version)
-      .select('version');
-    if (error) throw error;
-    if (data.length) return result;
+    const ok = await r.eval(CAS_SCRIPT, [KEY, VERSION_KEY], [version, JSON.stringify(db)]);
+    if (ok === 1) return result;
     await new Promise((res) => setTimeout(res, 30 + Math.random() * 120));
   }
   throw new Error('Database is busy, please retry');
@@ -98,13 +92,13 @@ async function persist(db: Database) {
 /* ---------- ממשק משותף ---------- */
 
 export async function readDb(): Promise<Database> {
-  if (supabase) return (await cloudRead(supabase)).db;
+  if (redis) return (await redisRead(redis)).db;
   cache ??= await fileInit();
   return cache;
 }
 
 export function updateDb<T>(fn: (db: Database) => T | Promise<T>): Promise<T> {
-  if (supabase) return cloudUpdate(supabase, fn);
+  if (redis) return redisUpdate(redis, fn);
   const run = queue.then(async () => {
     const db = await readDb();
     // עובדים על עותק כדי שכשל באמצע לא ישאיר נתונים חצי-מעודכנים בזיכרון
@@ -119,18 +113,13 @@ export function updateDb<T>(fn: (db: Database) => T | Promise<T>): Promise<T> {
 }
 
 /** כתובת של תמונה שהועלתה דרך האתר (ולא קישור חיצוני) */
-const PUBLIC_PREFIX = `${SUPABASE_URL ?? 'https://invalid.invalid'}/storage/v1/object/public/${BUCKET}/`;
-export const isCloudUpload = (url: string) => url.startsWith(PUBLIC_PREFIX);
+export const isBlobUrl = (url: string) => /^https:\/\/[a-z0-9-]+\.public\.blob\.vercel-storage\.com\//i.test(url);
 export const isLocalUpload = (url: string) => /^\/uploads\/[\w-]+\.(jpg|png|webp|avif)$/.test(url);
-export const cloudUploadUrl = (path: string) => PUBLIC_PREFIX + path;
 
 /** מוחק תמונה שהועלתה (מתעלם מכתובות חיצוניות) */
 export async function removeUpload(url: string) {
-  if (isCloudUpload(url)) {
-    if (supabase) {
-      const { error } = await supabase.storage.from(BUCKET).remove([decodeURIComponent(url.slice(PUBLIC_PREFIX.length))]);
-      if (error) console.error('Failed to delete image', url, error);
-    }
+  if (isBlobUrl(url)) {
+    if (BLOB_UPLOADS) await del(url).catch((err) => console.error('Failed to delete blob', url, err));
     return;
   }
   if (!url.startsWith('/uploads/')) return;

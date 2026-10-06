@@ -1,8 +1,8 @@
 /**
  * העברה חד-פעמית של הנתונים המקומיים (data/db.json + data/uploads) לענן:
- * התמונות עולות ל-Supabase Storage והנכסים והפניות נשמרים בטבלת kv ב-Supabase.
+ * התמונות עולות ל-Vercel Blob והנכסים והפניות נשמרים ב-Upstash Redis.
  *
- * לפני ההרצה:  npx vercel env pull .env.local   (מוריד את מפתחות Supabase מהפרויקט ב-Vercel)
+ * לפני ההרצה:  npx vercel env pull .env.local   (מוריד את מפתחות הענן מהפרויקט ב-Vercel)
  * הרצה:        npm run migrate
  */
 import { promises as fs } from 'node:fs';
@@ -10,19 +10,15 @@ import path from 'node:path';
 import dotenv from 'dotenv';
 
 dotenv.config({ path: '.env.local' });
-const { supabase, BUCKET, cloudUploadUrl, DATA_DIR, UPLOAD_DIR, updateDb } = await import('../server/db.js');
+const { put } = await import('@vercel/blob');
+const { redis, BLOB_UPLOADS, DATA_DIR, UPLOAD_DIR, updateDb } = await import('../server/db.js');
 
-if (!supabase) {
-  console.error('חסרים מפתחות של Supabase ב-.env.local. הריצו קודם: npx vercel env pull .env.local');
+if (!redis || !BLOB_UPLOADS) {
+  console.error('חסרים מפתחות של Upstash Redis או Vercel Blob ב-.env.local. הריצו קודם: npx vercel env pull .env.local');
   process.exit(1);
 }
 
-await supabase.storage
-  .createBucket(BUCKET, { public: true })
-  .then(({ error }) => error && !/exist/i.test(error.message) && console.warn(error.message));
-
 const local = JSON.parse(await fs.readFile(path.join(DATA_DIR, 'db.json'), 'utf8'));
-const mime = (n: string) => ({ '.jpg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp', '.avif': 'image/avif' })[path.extname(n)] ?? 'application/octet-stream';
 const moved = new Map<string, string>();
 
 for (const p of local.properties ?? []) {
@@ -39,10 +35,8 @@ for (const p of local.properties ?? []) {
         console.warn(`התמונה ${url} לא נמצאה, מדלגים`);
         continue;
       }
-      const key = `properties/${name}`;
-      const { error } = await supabase.storage.from(BUCKET).upload(key, file, { contentType: mime(name), upsert: true });
-      if (error) throw error;
-      moved.set(url, cloudUploadUrl(key));
+      const blob = await put(`properties/${name}`, file, { access: 'public', addRandomSuffix: true });
+      moved.set(url, blob.url);
       console.log(`הועלתה ${name}`);
     }
     images.push(moved.get(url)!);

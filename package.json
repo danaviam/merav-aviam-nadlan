@@ -11,8 +11,9 @@
     "migrate": "tsx scripts/migrate-to-vercel.ts"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.117.2",
+    "@upstash/redis": "^1.39.0",
     "@vercel/analytics": "^2.0.1",
+    "@vercel/blob": "^2.8.0",
     "@vercel/speed-insights": "^2.0.0",
     "cookie-parser": "^1.4.7",
     "dotenv": "^16.4.5",

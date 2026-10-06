@@ -85,7 +85,7 @@ export const api = {
   getProperty: (id: string) => request<Property>(`/api/properties/${encodeURIComponent(id)}`),
   sendContact: (data: ContactInput) => request<{ ok: true }>('/api/contact', json('POST', data)),
 
-  me: () => request<{ admin: boolean; cloudUploads?: boolean; uploadKey?: string }>('/api/admin/me'),
+  me: () => request<{ admin: boolean; blobUploads?: boolean }>('/api/admin/me'),
   login: (password: string) => request<{ admin: boolean }>('/api/admin/login', json('POST', { password })),
   logout: () => request<{ admin: boolean }>('/api/admin/logout', { method: 'POST' }),
 
@@ -94,23 +94,21 @@ export const api = {
   uploadImage: async (file: File): Promise<string> => {
     const compressed = await compressImage(file); // ← כיווץ לפני העלאה
 
-    const { cloudUploads, uploadKey } = await api.me();
-    if (!cloudUploads) {
+    const { blobUploads } = await api.me();
+    if (!blobUploads) {
       const fd = new FormData();
       fd.append('file', compressed);
       return (await request<{ url: string }>('/api/admin/upload', { method: 'POST', body: fd })).url;
     }
+    const { upload } = await import('@vercel/blob/client');
+    const ext = compressed.type.split('/')[1]?.replace('jpeg', 'jpg') ?? 'jpg';
     try {
-      const { uploadUrl, url } = await request<{ uploadUrl: string; url: string }>(
-        '/api/admin/upload',
-        json('POST', { contentType: compressed.type }),
-      );
-      const fd = new FormData();
-      fd.append('cacheControl', '31536000');
-      fd.append('', compressed);
-      const res = await fetch(uploadUrl, { method: 'PUT', body: fd, headers: uploadKey ? { apikey: uploadKey } : {} });
-      if (!res.ok) throw new Error(`Upload failed: ${res.status} ${await res.text()}`);
-      return url;
+      const blob = await upload(`properties/${crypto.randomUUID()}.${ext}`, compressed, {
+        access: 'public',
+        handleUploadUrl: '/api/admin/upload',
+        contentType: compressed.type,
+      });
+      return blob.url;
     } catch (err) {
       console.error(err);
       throw new ApiError(0, `העלאת התמונה "${file.name}" נכשלה. נסו שוב.`);
